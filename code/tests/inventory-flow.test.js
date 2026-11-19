@@ -123,7 +123,9 @@ function miniProgram() {
 async function setup() {
   const app = miniProgram();
   await app.api("createFamily", { name: "测试家庭" });
-  return { app, home: app.page("index"), items: app.page("items") };
+  const items = app.page("items");
+  await items.onShow();
+  return { app, home: app.page("index"), items };
 }
 
 async function addItem(app, items, fields, expiryIndex = 0, modeIndex = 0) {

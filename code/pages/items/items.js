@@ -1,25 +1,53 @@
 const { api, error, requestId } = require("../../utils/api");
 Page({
-  data: { items: [], visible: [], query: "", trash: false, selected: [] },
+  data: {
+    family: null,
+    loading: true,
+    error: "",
+    items: [],
+    visible: [],
+    query: "",
+    trash: false,
+    selected: [],
+  },
   onShow() {
-    this.load();
+    return this.load();
+  },
+  canUseItems() {
+    const { family, loading, error } = this.data;
+    return Boolean(family && !loading && !error);
+  },
+  openFamily() {
+    wx.switchTab({ url: "/pages/family/family" });
   },
   async load() {
+    const version = (this.loadVersion || 0) + 1;
+    this.loadVersion = version;
+    this.setData({ loading: true, error: "", selected: [] });
     try {
-      this.setData({ error: "" });
-      const snapshot = await api("snapshot");
+      const { family, items, members, currentMemberId } = await api("snapshot");
+      if (version !== this.loadVersion) return;
+      const changed = family?.id !== this.data.family?.id;
       this.setData({
-        ...snapshot,
-        isAdmin: snapshot.members.some(
-          (m) => m.id === snapshot.currentMemberId && m.role === "admin",
+        family,
+        items: family ? items : [],
+        isAdmin: Boolean(family) && members.some(
+          (m) => m.id === currentMemberId && m.role === "admin",
         ),
+        ...(changed && { query: "", trash: false }),
       });
       this.filter();
+      this.setData({ loading: false });
     } catch (e) {
-      this.setData({ error: e.message });
+      if (version === this.loadVersion)
+        this.setData({
+          loading: false,
+          error: String(e?.message || e?.errMsg || "暂时无法加载用品"),
+        });
     }
   },
   search(e) {
+    if (!this.canUseItems()) return;
     this.setData({ query: e.detail.value });
     this.filter();
   },
@@ -33,43 +61,51 @@ Page({
     });
   },
   select(e) {
+    if (!this.canUseItems() || !this.data.isAdmin) return;
     this.setData({ selected: e.detail.value });
   },
   bulk() {
-    if (!this.data.selected.length) return;
+    const { isAdmin, selected, trash } = this.data;
+    if (!this.canUseItems() || !isAdmin || !selected.length) return;
+    const version = this.loadVersion;
     wx.showModal({
-      title: this.data.trash ? "恢复所选物品？" : "将所选物品移入回收站？",
+      title: trash ? "恢复所选物品？" : "将所选物品移入回收站？",
       content: "保留全部历史流水。",
       success: async (r) => {
-        if (r.confirm)
-          try {
-            await api(this.data.trash ? "restoreItems" : "deleteItems", {
-              ids: this.data.selected,
-              requestId: requestId(),
-            });
-            this.setData({ selected: [] });
-            this.load();
-          } catch (e) {
-            error(e);
-          }
+        if (!r.confirm || version !== this.loadVersion || !this.canUseItems())
+          return;
+        try {
+          await api(trash ? "restoreItems" : "deleteItems", {
+            ids: selected,
+            requestId: requestId(),
+          });
+          if (version === this.loadVersion) await this.load();
+        } catch (e) {
+          error(e);
+        }
       },
     });
   },
   toggle() {
-    this.setData({ trash: !this.data.trash });
+    if (!this.canUseItems()) return;
+    this.setData({ trash: !this.data.trash, selected: [] });
     this.filter();
   },
   detail(e) {
+    if (!this.canUseItems()) return;
     wx.navigateTo({ url: "/pages/item/item?id=" + e.currentTarget.dataset.id });
   },
   recordUse(e) {
+    if (!this.canUseItems()) return;
     const id = e && e.currentTarget.dataset.id;
     wx.navigateTo({ url: "/pages/editor/editor?kind=use" + (id ? "&itemId=" + id : "") });
   },
   add() {
+    if (!this.canUseItems()) return;
     wx.navigateTo({ url: "/pages/editor/editor?kind=item" });
   },
   intake(e) {
+    if (!this.canUseItems()) return;
     wx.navigateTo({
       url: "/pages/intake/intake?source=" + e.currentTarget.dataset.source,
     });
