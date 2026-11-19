@@ -8,6 +8,16 @@
   </view>
   <view wx:if="{{error}}" class="notice">{{error}}</view>
   <block wx:if="{{!family}}">
+    <block wx:if="{{recoverableFamilies.length}}">
+      <view class="section row-title">找回家庭</view>
+      <view wx:for="{{recoverableFamilies}}" wx:key="id" class="row">
+        <view class="recovery-details">
+          <view>{{item.name}}</view>
+          <view class="muted">找回截止 {{item.deadline}}（北京时间）</view>
+        </view>
+        <button class="secondary" size="mini" disabled="{{busy}}" data-id="{{item.id}}" bindtap="restore">找回</button>
+      </view>
+    </block>
     <view class="subtitle">创建共享空间，或通过家人分享的邀请加入。</view>
     <input placeholder="家庭名称" data-key="name" bindinput="input"/>
     <input placeholder="宝宝称呼" data-key="babyName" bindinput="input"/>
@@ -28,7 +38,7 @@
       </view>
     </view>
     <view class="actions">
-      <button wx:if="{{isAdmin}}" bindtap="invite">邀请家人</button>
+      <button wx:if="{{isAdmin}}" disabled="{{busy}}" bindtap="invite">邀请家人</button>
       <button wx:if="{{shareToken}}" open-type="share" class="secondary">分享邀请</button>
     </view>
     <view wx:for="{{invites}}" wx:key="id" class="row">
@@ -39,7 +49,7 @@
     <view class="notice">每天北京时间 9 点检查。一次性订阅需主动授权，不保证永久每日推送。无授权或发送失败时，首页提醒仍保留。</view>
     <button bindtap="subscribe">订阅下一次提醒</button>
     <view class="actions">
-      <button class="danger" bindtap="leave">退出家庭</button>
+      <button class="danger" disabled="{{busy}}" bindtap="leave">退出家庭</button>
     </view>
   </block>
 </view>

@@ -1,1 +1,7 @@
-{"permissions":{"openapi":["subscribeMessage.send"]},"triggers":[{"name":"daily-reminders","type":"timer","config":"0 0 9 * * * *"}]}
+{
+  "permissions": { "openapi": ["subscribeMessage.send"] },
+  "triggers": [
+    { "name": "daily-reminders", "type": "timer", "config": "0 0 9 * * * *" },
+    { "name": "family-recovery-cleanup", "type": "timer", "config": "0 5 * * * * *" }
+  ]
+}

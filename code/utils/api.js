@@ -3,7 +3,12 @@ const config = require("../config");
 async function api(action, payload = {}) {
   if (!config.envId)
     throw new Error("尚未连接云环境，请完成 config.js 配置后重试");
-  const mutable = !["snapshot", "preview", "trends"].includes(action);
+  const mutable = ![
+    "snapshot",
+    "preview",
+    "trends",
+    "listRecoverableFamilies",
+  ].includes(action);
   const clean = { ...payload };
   delete clean.requestId;
   const key = action + JSON.stringify(clean);
