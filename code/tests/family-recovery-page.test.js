@@ -5,17 +5,20 @@ const vm = require("node:vm");
 
 const family = { id: "old-family", name: "宝宝之家" };
 const admin = { id: "me", role: "admin" };
-const active = { family, currentMemberId: admin.id, members: [admin] };
+const active = { family, currentMemberId: admin.id, members: [admin], invites: [] };
 const inactive = { family: null, members: [] };
 const recoverable = {
   id: family.id,
   name: family.name,
   recoverUntil: Date.parse("2026-11-22T01:02:03Z"),
 };
+const testNow = Date.parse("2026-11-19T12:00:00Z");
 
 function openPage(respond) {
   const calls = [];
   const modals = [];
+  const clipboard = [];
+  let now = testNow;
   let page;
   vm.runInNewContext(
     fs.readFileSync(require.resolve("../pages/family/family.js"), "utf8"),
@@ -24,7 +27,13 @@ function openPage(respond) {
         page = definition;
         page.setData = (data) => Object.assign(page.data, data);
       },
-      wx: { showModal: (modal) => modals.push(modal) },
+      wx: {
+        showModal: (modal) => modals.push(modal),
+        setClipboardData: ({ data }) => clipboard.push(data),
+      },
+      Date: class extends Date {
+        static now() { return now; }
+      },
       require: (module) =>
         module.endsWith("/api")
           ? {
@@ -38,8 +47,67 @@ function openPage(respond) {
           : {},
     },
   );
-  return { page, calls, modals };
+  return { page, calls, modals, clipboard, setNow: (value) => { now = value; } };
 }
+
+const invitation = {
+  id: "invite",
+  token: "abcde123-4567-8901-2345-678901234567",
+  expiresAt: new Date(testNow + 86400000).toISOString(),
+};
+
+function invitationEvent(id) {
+  return { currentTarget: { dataset: { id, token: "untrusted-token" } } };
+}
+
+test("a new invitation can be copied before the follow-up snapshot returns", async () => {
+  let finishSnapshot;
+  let startSnapshot;
+  const snapshotStarted = new Promise((resolve) => { startSnapshot = resolve; });
+  const refresh = new Promise((resolve) => { finishSnapshot = resolve; });
+  let initial = true;
+  const { page, clipboard } = openPage((action) => {
+    if (action === "invite") return invitation;
+    if (initial) return active;
+    startSnapshot();
+    return refresh;
+  });
+  await page.load();
+  initial = false;
+  const generating = page.invite();
+  await snapshotStarted;
+  page.copyInvite(invitationEvent(invitation.id));
+  assert.deepEqual(clipboard, [invitation.token]);
+  finishSnapshot({ ...active, invites: [invitation] });
+  await generating;
+  assert.equal(page.data.invites.length, 1);
+  assert.match(page.onShareAppMessage().path, new RegExp(invitation.token));
+});
+
+test("reopening the family lists saved codes and ignores revoked, expired and unauthorized copy requests", async () => {
+  const revoked = { ...invitation, id: "revoked", revoked: true };
+  const expired = { ...invitation, id: "expired", expiresAt: "2000-01-01T00:00:00.000Z" };
+  let snapshot = { ...active, invites: [invitation, revoked, expired] };
+  const { page, clipboard } = openPage(() => snapshot);
+  await page.load();
+  assert.deepEqual(Array.from(page.data.invites, (item) => item.available), [true, false, false]);
+  for (const item of snapshot.invites) page.copyInvite(invitationEvent(item.id));
+  assert.deepEqual(clipboard, [invitation.token]);
+  snapshot = { ...snapshot, members: [{ ...admin, role: "member" }] };
+  await page.load();
+  page.copyInvite(invitationEvent(invitation.id));
+  assert.deepEqual(clipboard, [invitation.token]);
+  assert.equal(page.data.invites.length, 0);
+});
+
+test("a code that expires while the page is open is no longer copied or shared", async () => {
+  const { page, clipboard, setNow } = openPage(() => ({ ...active, invites: [invitation] }));
+  await page.load();
+  setNow(Date.parse(invitation.expiresAt));
+  page.copyInvite(invitationEvent(invitation.id));
+  assert.deepEqual(clipboard, []);
+  assert.equal(page.onShareAppMessage().path, "/pages/family/family");
+});
 
 test("sole member confirms closure of the displayed family", async () => {
   let snapshot = active;

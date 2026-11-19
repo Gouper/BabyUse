@@ -19,3 +19,18 @@
   flex: 1;
   overflow-wrap: anywhere;
 }
+.invitation-instructions {
+  margin-bottom: 18rpx;
+}
+.invitation-code {
+  font-size: 30rpx;
+  font-weight: 600;
+  word-break: break-all;
+}
+.invitation-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-top: 12rpx;
+}

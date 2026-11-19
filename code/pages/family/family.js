@@ -9,6 +9,21 @@ function beijingDeadline(timestamp) {
     .replace("T", " ");
 }
 
+function inviteAvailable(invite, now = Date.now()) {
+  return Boolean(
+    invite.token && !invite.revoked && Date.parse(invite.expiresAt) > now,
+  );
+}
+
+function invitationView(invite) {
+  const expiresAt = Date.parse(invite.expiresAt);
+  return {
+    ...invite,
+    available: inviteAvailable(invite),
+    deadline: Number.isFinite(expiresAt) ? beijingDeadline(expiresAt) : "",
+  };
+}
+
 Page({
   data: {
     family: null,
@@ -35,18 +50,16 @@ Page({
       const isAdmin = snapshot.members.some(
         (m) => m.id === snapshot.currentMemberId && m.role === "admin",
       );
-      const shareToken = this.data.shareToken;
-      const canShare =
-        isAdmin &&
-        snapshot.family?.id === this.data.family?.id &&
-        shareToken &&
-        snapshot.invites.some(
-          (invite) => invite.token === shareToken && !invite.revoked,
-        );
+      const invites = isAdmin ? snapshot.invites.map(invitationView) : [];
+      const shareInvite = invites
+        .slice()
+        .reverse()
+        .find((invite) => invite.available);
       this.setData({
         ...snapshot,
         isAdmin,
-        shareToken: canShare ? shareToken : "",
+        invites,
+        shareToken: shareInvite?.token || "",
         recoverableFamilies: [],
         error: "",
       });
@@ -71,10 +84,24 @@ Page({
   },
   async act(action, p = {}) {
     if (this.data.busy) return;
+    const familyId = this.data.family?.id;
     try {
       this.setData({ busy: true });
       const result = await api(action, { ...p, requestId: requestId() });
-      if (action === "invite") this.setData({ shareToken: result.token });
+      if (
+        action === "invite" &&
+        familyId === this.data.family?.id &&
+        this.data.isAdmin
+      ) {
+        const invite = invitationView(result);
+        this.setData({
+          invites: [
+            ...this.data.invites.filter((item) => item.id !== invite.id),
+            invite,
+          ],
+          shareToken: invite.available ? invite.token : "",
+        });
+      }
       await this.load();
     } catch (e) {
       if (["closeFamily", "restoreFamily", "leave"].includes(action))
@@ -93,12 +120,22 @@ Page({
   invite() {
     return this.act("invite");
   },
+  copyInvite(e) {
+    if (!this.data.family || !this.data.isAdmin) return;
+    const { id } = e.currentTarget.dataset;
+    const invite = this.data.invites.find((invite) => invite.id === id);
+    if (invite && inviteAvailable(invite))
+      wx.setClipboardData({ data: invite.token, fail: error });
+  },
   onShareAppMessage() {
+    const path = "/pages/family/family";
+    const { family, isAdmin, invites, shareToken } = this.data;
+    const invite = family && isAdmin && invites.find((item) => item.token === shareToken);
     return {
       title: "一起照顾宝宝的日常用品",
-      path:
-        "/pages/family/family?token=" +
-        encodeURIComponent(this.data.shareToken || ""),
+      path: invite && inviteAvailable(invite)
+        ? path + "?token=" + encodeURIComponent(invite.token)
+        : path,
     };
   },
   revoke(e) {

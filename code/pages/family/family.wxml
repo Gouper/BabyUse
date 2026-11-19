@@ -23,7 +23,7 @@
     <input placeholder="宝宝称呼" data-key="babyName" bindinput="input"/>
     <button disabled="{{busy}}" bindtap="create">创建家庭</button>
     <view class="section label">接受邀请</view>
-    <input placeholder="邀请口令" value="{{token}}" bindinput="token"/>
+    <input placeholder="请输入邀请码" value="{{token}}" bindinput="token"/>
     <button class="secondary" disabled="{{busy}}" bindtap="join">确认加入</button>
   </block>
   <block wx:else>
@@ -38,12 +38,22 @@
       </view>
     </view>
     <view class="actions">
-      <button wx:if="{{isAdmin}}" disabled="{{busy}}" bindtap="invite">邀请家人</button>
+      <button wx:if="{{isAdmin}}" disabled="{{busy}}" bindtap="invite">生成邀请码</button>
       <button wx:if="{{shareToken}}" open-type="share" class="secondary">分享邀请</button>
     </view>
+    <view wx:if="{{shareToken}}" class="muted invitation-instructions">把邀请码发给家人，请对方在「家庭」页的「接受邀请」里粘贴后加入。</view>
     <view wx:for="{{invites}}" wx:key="id" class="row">
-      <view class="muted">有效至 {{item.expiresAt}} {{item.revoked?'已撤销':''}}</view>
-      <view wx:if="{{!item.revoked}}" class="link" data-id="{{item.id}}" bindtap="revoke">撤销邀请</view>
+      <block wx:if="{{item.available}}">
+        <view class="muted">邀请码</view>
+        <view class="invitation-code">{{item.token}}</view>
+      </block>
+      <view wx:if="{{item.deadline}}" class="muted">有效至 {{item.deadline}}（北京时间）</view>
+      <view wx:if="{{item.revoked}}" class="muted">已撤销</view>
+      <view wx:elif="{{!item.available}}" class="muted">已过期</view>
+      <view wx:if="{{!item.revoked}}" class="invitation-actions">
+        <button wx:if="{{item.available}}" class="secondary" size="mini" data-id="{{item.id}}" bindtap="copyInvite">复制邀请码</button>
+        <view class="link" data-id="{{item.id}}" bindtap="revoke">撤销邀请</view>
+      </view>
     </view>
     <view class="section row-title">微信提醒</view>
     <view class="notice">每天北京时间 9 点检查。一次性订阅需主动授权，不保证永久每日推送。无授权或发送失败时，首页提醒仍保留。</view>
