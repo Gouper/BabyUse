@@ -1,0 +1,20 @@
+.inventory-hero {
+  background: #eae4f8;
+  border-radius: 28rpx;
+  padding: 36rpx;
+  margin: 28rpx 0 20rpx;
+}
+.inventory-hero .quantity {
+  margin-top: 16rpx;
+  color: #6650af;
+}
+.inventory-hero .unit {
+  color: #847299;
+}
+
+
+@media (prefers-color-scheme: dark) {
+  .inventory-hero { background: #332a48; }
+  .inventory-hero .quantity { color: #d3c4ff; }
+  .inventory-hero .unit { color: #c9bed6; }
+}

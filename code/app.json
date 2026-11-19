@@ -1,0 +1,50 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/items/items",
+    "pages/records/records",
+    "pages/family/family",
+    "pages/item/item",
+    "pages/editor/editor",
+    "pages/intake/intake",
+    "pages/trends/trends"
+  ],
+  "window": {
+    "navigationBarTitleText": "宝宝用品小柜",
+    "navigationBarBackgroundColor": "@pageBackground",
+    "navigationBarTextStyle": "@navigationText",
+    "backgroundColor": "@pageBackground",
+    "backgroundTextStyle": "@backgroundText",
+    "backgroundColorTop": "@pageBackground",
+    "backgroundColorBottom": "@pageBackground"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "tabBar": {
+    "color": "@tabText",
+    "selectedColor": "@tabSelected",
+    "backgroundColor": "@tabBackground",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "@indexIcon",
+        "selectedIconPath": "@indexSelectedIcon"
+      },
+      {
+        "pagePath": "pages/items/items",
+        "text": "用品",
+        "iconPath": "@itemsIcon",
+        "selectedIconPath": "@itemsSelectedIcon"
+      },
+      {
+        "pagePath": "pages/family/family",
+        "text": "家庭",
+        "iconPath": "@familyIcon",
+        "selectedIconPath": "@familySelectedIcon"
+      }
+    ]
+  },
+  "darkmode": true,
+  "themeLocation": "theme.json"
+}

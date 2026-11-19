@@ -1,0 +1,37 @@
+@media (prefers-color-scheme: dark) {
+  .bottle-cap, .bottle-line { background: #8e7abb; }
+  .bottle-body {
+    background: #332a48;
+    border-color: #8e7abb;
+  }
+
+  .cabinet-dot, .alert-dot.sun { background: #e4ba66; }
+  .reminder { background: #332a48; }
+  .reminder.sun { background: #3c3022; }
+  .reminder.peach { background: #402e2d; }
+  .reminder.rose { background: #3d2c3a; }
+  .reminder-unit, .reminder-label { color: #c9bed6; }
+
+  .quick-primary {
+    background: #bba8ff;
+    color: #251b3b;
+  }
+
+  .quick-secondary, .stock-list, .alert-row {
+    background: #262231;
+  }
+
+  .quick-secondary { color: #ddd4ea; }
+  .stock-header {
+    background: #332a48;
+    color: #d3c4ff;
+  }
+
+  .stock-entry-row + .stock-entry-row { border-top-color: #3b3449; }
+  .stock-entry-row .stock-amount { color: #bba8ff; }
+  .alert-row { border-bottom-color: #3b3449; }
+  .alert-dot { background: #bba8ff; }
+  .alert-dot.rose { background: #e5a3c0; }
+  .alert-dot.peach { background: #f5a68f; }
+  .chevron { color: #a89db9; }
+}

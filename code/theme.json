@@ -1,0 +1,30 @@
+{
+  "light": {
+    "pageBackground": "#F6F5FA",
+    "navigationText": "black",
+    "backgroundText": "dark",
+    "tabText": "#9890A6",
+    "tabSelected": "#7561CF",
+    "tabBackground": "#FFFFFF",
+    "indexIcon": "assets/tabs/index.png",
+    "indexSelectedIcon": "assets/tabs/index-active.png",
+    "itemsIcon": "assets/tabs/items.png",
+    "itemsSelectedIcon": "assets/tabs/items-active.png",
+    "familyIcon": "assets/tabs/family.png",
+    "familySelectedIcon": "assets/tabs/family-active.png"
+  },
+  "dark": {
+    "pageBackground": "#1B1822",
+    "navigationText": "white",
+    "backgroundText": "light",
+    "tabText": "#B8AFC8",
+    "tabSelected": "#BBA8FF",
+    "tabBackground": "#262231",
+    "indexIcon": "assets/tabs/index-dark.png",
+    "indexSelectedIcon": "assets/tabs/index-active-dark.png",
+    "itemsIcon": "assets/tabs/items-dark.png",
+    "itemsSelectedIcon": "assets/tabs/items-active-dark.png",
+    "familyIcon": "assets/tabs/family-dark.png",
+    "familySelectedIcon": "assets/tabs/family-active-dark.png"
+  }
+}

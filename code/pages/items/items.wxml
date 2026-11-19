@@ -1,0 +1,60 @@
+<view class="page">
+  <view class="section-head">
+    <view>
+      <view class="title">家里的用品</view>
+      <view class="subtitle">收好每一份，照顾每一天。</view>
+    </view>
+    <button size="mini" bindtap="add">＋ 添加</button>
+  </view>
+  <view wx:if="{{error}}" class="notice error">{{error}}</view>
+  <input class="search" placeholder="搜索用品、分类或规格" bindinput="search"/>
+  <view class="stock-entry">
+    <view bindtap="intake" data-source="purchase">
+      <view class="entry-icon">＋</view>
+      <view>
+        <view class="row-title">新购入库</view>
+        <view class="muted">把新买的放进来</view>
+      </view>
+    </view>
+    <view bindtap="intake" data-source="initial">
+      <view class="entry-icon neutral">▤</view>
+      <view>
+        <view class="row-title">整理现有物品</view>
+        <view class="muted">记录实际剩余数量</view>
+      </view>
+    </view>
+  </view>
+  <view class="section-head section">
+    <view class="row-title">{{trash?'回收站':'全部用品'}} <text class="count-pill">{{visible.length}}</text>
+  </view>
+  <view class="link" bindtap="toggle">{{trash?'返回用品':'回收站'}}</view>
+</view>
+<view wx:if="{{!visible.length}}" class="panel empty">
+  <view class="empty-symbol">▤</view>
+  <view class="empty-title">{{trash?'回收站是空的':'这里还没有用品'}}</view>
+  <view>{{trash?'移除的用品会保留在这里。':'添加用品，再把家里的存货录进来。'}}</view>
+</view>
+<checkbox-group bindchange="select">
+  <view wx:for="{{visible}}" wx:key="id" class="row supply-row">
+    <checkbox wx:if="{{isAdmin}}" value="{{item.id}}" color="#7561CF"/>
+    <view class="grow" data-id="{{item.id}}" bindtap="detail">
+      <view class="inline">
+        <view class="grow">
+          <view class="row-title">{{item.name}}</view>
+          <view class="muted">{{item.spec||'未填写规格'}}</view>
+        </view>
+        <view class="stock-quantity">{{item.available}}<text class="unit">{{item.unit}}</text>
+      </view>
+    </view>
+    <view class="supply-bottom">
+      <text class="tag">{{item.category||'未分类'}}</text>
+      <text wx:if="{{item.mode==='container'}}" class="muted">使用中 {{item.using}} {{item.unit}}</text>
+      <text wx:else class="muted">账面可用余量</text>
+      <button wx:if="{{!trash}}" size="mini" class="secondary" data-id="{{item.id}}" bindtap="recordUse">记使用</button>
+    </view>
+  </view>
+</view>
+</checkbox-group>
+<button wx:if="{{isAdmin && selected.length}}" class="danger" bindtap="bulk">{{trash?'恢复':'移入回收站'}} {{selected.length}} 项</button>
+<view wx:if="{{isAdmin && visible.length}}" class="footer-note">勾选用品可批量管理，历史记录会保留。</view>
+</view>

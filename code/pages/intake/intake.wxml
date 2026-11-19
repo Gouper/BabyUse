@@ -1,0 +1,61 @@
+<view class="page">
+  <view class="title">{{source==='purchase'?'新购入库':'整理现有物品'}}</view>
+  <view class="subtitle">{{source==='purchase'?'把新买的数量加到库存。':'填写清点当天实际剩下的数量。同一用品以较新的清点为准。'}}</view>
+  <view class="panel">
+    <view class="label">{{source==='purchase'?'实际入库日期':'实际清点日期'}}</view>
+    <picker mode="date" value="{{date}}" end="{{today}}" disabled="{{busy}}" bindchange="date">{{date}} · 点击修改</picker>
+    <view class="muted">本次用品使用同一个日期，可补记过去的记录。</view>
+  </view>
+  <view wx:if="{{loading}}" class="panel empty">正在加载家里的用品…</view>
+  <view wx:elif="{{loadError}}" class="panel"><view class="notice error">{{loadError}}</view><button class="secondary" bindtap="loadItems">重新加载</button></view>
+  <block wx:else>
+    <view wx:if="{{!items.length}}" class="muted selection-hint">还没有用品，可以在下方新增。</view>
+    <supply-picker items="{{items}}" allow-create="{{true}}" disabled="{{busy || parsing}}" placeholder="＋ 选择用品" bind:select="add" bind:create="createSupply"/>
+    <view wx:if="{{items.length}}" class="muted selection-hint">可选多款用品。同款不同有效期请在本次清单里分开添加。</view>
+  </block>
+  <view class="paste-toggle link" bindtap="togglePaste">{{pasteOpen?'收起粘贴清单':'有文字清单？粘贴批量添加'}}</view>
+  <view wx:if="{{pasteOpen}}" class="panel">
+    <textarea value="{{text}}" disabled="{{busy}}" bindinput="text" placeholder="如：纸尿裤L码 2包 每包50片"/>
+    <button class="secondary" disabled="{{busy || parsing || loading || !!loadError || !items.length}}" loading="{{parsing}}" bindtap="parse">{{rows.length?'导入清单（保留已选用品）':'导入清单'}}</button>
+  </view>
+  <view wx:for="{{rows}}" wx:for-index="n" wx:key="rowKey" class="row intake-card">
+    <view class="section-head">
+      <view class="form-title">{{item.displayName||'请选择用品'}}</view>
+      <view class="link" data-n="{{n}}" bindtap="remove">移除</view>
+    </view>
+    <view wx:if="{{item.spec}}" class="muted">{{item.spec}}</view>
+    <view wx:if="{{item.raw}}" class="muted">清单原文：{{item.raw}}</view>
+    <supply-picker items="{{items}}" selected-id="{{item.itemId}}" allow-create="{{true}}" disabled="{{busy || parsing || loading || !!loadError}}" placeholder="{{item.itemId?'更换用品':'选择对应用品'}}" data-n="{{n}}" bind:select="pick" bind:create="createSupply"/>
+    <view class="label">{{item.packSize>1?'有几包':'有多少'+(item.unit||'个')}}</view>
+    <view class="quantity-stepper">
+      <button class="secondary" size="mini" disabled="{{busy || item.quantity<=1}}" data-n="{{n}}" data-delta="-1" bindtap="step">−</button>
+      <input type="digit" disabled="{{busy}}" value="{{item.quantity}}" data-n="{{n}}" data-key="quantity" bindinput="change"/>
+      <button class="secondary" size="mini" disabled="{{busy}}" data-n="{{n}}" data-delta="1" bindtap="step">＋</button>
+    </view>
+    <view class="muted">{{item.packSize>1?'每包 '+item.packSize+' '+item.unit:'按'+(item.unit||'个')+'记录'}} · 合计 {{item.quantity * item.packSize}} {{item.unit}}</view>
+    <view class="link detail-toggle" data-n="{{n}}" bindtap="toggleDetails">{{item.showDetails?'收起包装设置':'按散件记录或调整每包数量 ›'}}</view>
+    <view wx:if="{{item.showDetails}}">
+      <view class="label">每包包含多少 {{item.unit||'个'}}（按散件记录填 1）</view>
+      <input type="digit" disabled="{{busy}}" value="{{item.packSize}}" data-n="{{n}}" data-key="packSize" bindinput="change"/>
+    </view>
+    <block wx:if="{{item.expiryMode && item.expiryMode!=='none'}}">
+      <view class="label">包装有效期（选填）</view>
+      <view class="optional-date">
+        <picker mode="date" disabled="{{busy}}" value="{{item.expiry||today}}" data-n="{{n}}" data-key="expiry" bindchange="change">{{item.expiry||'选择有效期 ›'}}</picker>
+        <view wx:if="{{item.expiry}}" class="link" data-n="{{n}}" data-key="expiry" bindtap="clearDate">清除</view>
+      </view>
+    </block>
+    <block wx:if="{{source==='initial' && (item.itemMode==='container' || item.expiryMode==='opened')}}">
+      <view class="label">已开封日期（选填，未开封留空）</view>
+      <view class="optional-date">
+        <picker mode="date" disabled="{{busy}}" end="{{today}}" value="{{item.openedAt||today}}" data-n="{{n}}" data-key="openedAt" bindchange="change">{{item.openedAt||'选择开封日期 ›'}}</picker>
+        <view wx:if="{{item.openedAt}}" class="link" data-n="{{n}}" data-key="openedAt" bindtap="clearDate">清除</view>
+      </view>
+    </block>
+  </view>
+  <view class="actions">
+    <button disabled="{{busy || parsing || loading || !!loadError || !rows.length}}" bindtap="preview">核对并预览</button>
+  </view>
+  <view wx:if="{{preview}}" class="notice">已核对 {{date}} {{source==='purchase'?'采购入库':'库存清点'}}，共 {{rows.length}} 行。请确认日期、数量、换算和有效期。<button disabled="{{busy}}" loading="{{busy}}" bindtap="save">{{source==='purchase'?'确认入库':'保存清点'}}</button>
+</view>
+</view>

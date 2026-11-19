@@ -1,0 +1,45 @@
+<view class="page">
+  <view class="family-heading">
+    <view class="avatar">家</view>
+    <view>
+      <view class="title">{{family.name||'我的家庭'}}</view>
+      <view class="subtitle">一起照顾，一起记录。</view>
+    </view>
+  </view>
+  <view wx:if="{{error}}" class="notice">{{error}}</view>
+  <block wx:if="{{!family}}">
+    <view class="subtitle">创建共享空间，或通过家人分享的邀请加入。</view>
+    <input placeholder="家庭名称" data-key="name" bindinput="input"/>
+    <input placeholder="宝宝称呼" data-key="babyName" bindinput="input"/>
+    <button disabled="{{busy}}" bindtap="create">创建家庭</button>
+    <view class="section label">接受邀请</view>
+    <input placeholder="邀请口令" value="{{token}}" bindinput="token"/>
+    <button class="secondary" disabled="{{busy}}" bindtap="join">确认加入</button>
+  </block>
+  <block wx:else>
+    <view class="subtitle">{{family.babyName}}的共享用品</view>
+    <view class="section row-title">家庭成员</view>
+    <view wx:for="{{members}}" wx:key="id" class="row">
+      <view>{{item.id===currentMemberId?'我':'家庭成员 '+(index+1)}}</view>
+      <view class="tag">{{item.role==='admin'?'管理员':'成员'}}</view>
+      <view wx:if="{{isAdmin}}" class="actions">
+        <button class="secondary" size="mini" data-id="{{item.id}}" data-role="{{item.role==='admin'?'member':'admin'}}" bindtap="role">{{item.role==='admin'?'设为成员':'设为管理员'}}</button>
+        <button class="danger" size="mini" data-id="{{item.id}}" bindtap="remove">移除</button>
+      </view>
+    </view>
+    <view class="actions">
+      <button wx:if="{{isAdmin}}" bindtap="invite">邀请家人</button>
+      <button wx:if="{{shareToken}}" open-type="share" class="secondary">分享邀请</button>
+    </view>
+    <view wx:for="{{invites}}" wx:key="id" class="row">
+      <view class="muted">有效至 {{item.expiresAt}} {{item.revoked?'已撤销':''}}</view>
+      <view wx:if="{{!item.revoked}}" class="link" data-id="{{item.id}}" bindtap="revoke">撤销邀请</view>
+    </view>
+    <view class="section row-title">微信提醒</view>
+    <view class="notice">每天北京时间 9 点检查。一次性订阅需主动授权，不保证永久每日推送。无授权或发送失败时，首页提醒仍保留。</view>
+    <button bindtap="subscribe">订阅下一次提醒</button>
+    <view class="actions">
+      <button class="danger" bindtap="leave">退出家庭</button>
+    </view>
+  </block>
+</view>

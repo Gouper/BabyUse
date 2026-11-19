@@ -1,0 +1,9 @@
+node_modules/
+npm-debug.log*
+/code/config.js
+/code/project.config.json
+/code/project.private.config.json
+.env
+.env.*
+.DS_Store
+Thumbs.db

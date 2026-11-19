@@ -1,0 +1,14 @@
+<button class="trigger" disabled="{{disabled}}" bindtap="toggle">
+  <text class="trigger-label">{{selectedLabel || placeholder}}</text>
+  <text class="accent">{{open ? '收起' : '›'}}</text>
+</button>
+<view wx:if="{{open}}" class="choices">
+  <input class="search" value="{{query}}" bindinput="search" placeholder="搜索名称或规格" placeholder-class="search-placeholder" confirm-type="search" />
+  <view wx:if="{{!results.length}}" class="empty">{{items.length ? '没有匹配的用品' : '还没有用品'}}</view>
+  <scroll-view wx:else scroll-y="{{results.length > 5}}" class="{{results.length > 5 ? 'result-scroll' : ''}}">
+    <button wx:for="{{results}}" wx:key="id" class="choice {{item.id === selectedId ? 'selected' : ''}}" data-id="{{item.id}}" bindtap="select">
+      {{item.label}}
+    </button>
+  </scroll-view>
+  <button wx:if="{{allowCreate}}" class="choice create" bindtap="create">＋ 新增用品</button>
+</view>

@@ -1,0 +1,40 @@
+<view class="page">
+  <view class="title">用品趋势</view>
+  <picker class="trend-item-picker" range="{{names}}" value="{{index}}" disabled="{{!items.length}}" bindchange="pick">{{names[index]||'请先添加用品'}} <text wx:if="{{items.length}}" class="muted">›</text></picker>
+  <view class="trend-tabs">
+    <button wx:for="{{modeChoices}}" wx:key="*this" size="mini" class="{{mode===item?'':'secondary'}}" data-mode="{{item}}" bindtap="mode">{{modes[item]}}</button>
+  </view>
+  <view class="panel chart-panel">
+    <view class="section-head">
+      <view class="form-title">{{modes[mode]}}</view>
+      <view wx:if="{{lastPoint && !loading && !chartError}}" class="chart-value">{{mode===1?(lastPoint.endDate>lastPoint.date?'最近区间合计 ':'最近记录日合计 '):''}}{{lastPoint.inferred?'约 ':''}}{{lastPoint.value}} {{unit}}</view>
+    </view>
+    <canvas wx:if="{{points.length && !loading && !chartError}}" type="2d" id="trendChart" class="trend-chart" aria-label="{{modes[mode]}}折线图"/>
+    <view wx:if="{{loading}}" class="empty">正在加载趋势…</view>
+    <view wx:elif="{{chartError}}" class="notice error">{{chartError}}<button class="secondary" bindtap="load">重新加载</button></view>
+    <view wx:elif="{{!points.length}}" class="empty">{{items.length?(mode===1?(containerMode?'所选日期没有用完记录':'所选日期没有使用记录'):'所选日期没有这类记录'):'请先添加用品并记录库存或使用'}}</view>
+    <view wx:elif="{{mode===1}}" class="muted chart-caption">{{containerMode?'按日期汇总正常用完的数量。':'按日期汇总记录的使用量，缺记日期留空。'}}{{hasIntervals?'空心点是跨天补记的合计，标在区间起始日。':''}}</view>
+    <view wx:elif="{{mode===0 && inferredPoints.length}}" class="muted chart-caption">空心点是根据后续清点和已记流水倒推的数量。</view>
+    <view wx:for="{{inferredPoints}}" wx:key="id" class="section-head inferred-point">
+      <text>{{item.date}} · 记录前推算</text>
+      <text>约 {{item.value}} {{unit}}</text>
+    </view>
+  </view>
+  <view wx:if="{{items.length}}" class="panel trend-dates">
+    <view>
+      <view class="label">起始日期</view>
+      <picker mode="date" data-key="from" value="{{from||to}}" bindchange="date">{{from||'全部日期'}}</picker>
+    </view>
+    <view>
+      <view class="label">结束日期</view>
+      <picker mode="date" value="{{to}}" data-key="to" bindchange="date">{{to}}</picker>
+    </view>
+  </view>
+  <view wx:if="{{mode===0 && points.length}}" class="notice">{{containerMode?'库存图为未开封账面流水，盘点按未开封校准，使用中另记':'库存图为账面流水余额'}}，过期可用量请查看物品详情。复杂历史补记可能影响余额，请以用品详情和实物核对为准。</view>
+  <view wx:for="{{rows}}" wx:key="id" class="row">
+    <view class="row-title">{{item.date}} {{item.endDate>item.date?'至 '+item.endDate+'（区间汇总）':''}}</view>
+    <view class="tag">{{item.type==='initial'?'整理现有物品':item.type==='purchase'?'采购入库':item.type==='use'?'正常消耗':item.type==='loss'?'报损':item.type==='count'?'盘点校准':item.type==='finish'?'正常用完':item.type}}</view>
+    <view class="value">{{item.type==='count'?'校准至 ':''}}{{item.quantity}} {{unit}}</view>
+    <view class="muted">{{item.reason}}</view>
+  </view>
+</view>

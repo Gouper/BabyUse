@@ -1,0 +1,5 @@
+{
+  "usingComponents": {
+    "supply-picker": "/components/supply-picker/supply-picker"
+  }
+}

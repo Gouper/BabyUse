@@ -1,0 +1,44 @@
+<view class="page">
+  <view class="title">{{item.name}}</view>
+  <view class="subtitle">{{item.category}} · {{item.spec}}</view>
+  <view class="inventory-hero">
+    <view class="muted">账面可用余量</view>
+    <view class="quantity">{{item.available}}<text class="unit">{{item.unit}}</text>
+  </view>
+</view>
+<view wx:if="{{item.mode==='container'}}" class="muted">未开封 {{item.unopened}} / 使用中 {{item.using}}</view>
+<view class="notice">{{item.estimate.warning||'账面余量可能因漏记而偏高，请结合实物核对。'}}<view wx:if="{{item.estimate.days}}">预计可用 {{item.estimate.days}} 天 · 预计用完 {{item.estimate.expectedDate}}</view>
+</view>
+<view wx:for="{{alerts}}" wx:key="index" class="notice">{{item.message}}</view>
+<view class="actions">
+  <button data-kind="use" bindtap="record">记一笔使用</button>
+  <button class="secondary" data-kind="count" bindtap="record">盘点校准</button>
+  <button class="secondary" data-kind="loss" bindtap="record">登记报损</button>
+</view>
+<view class="section link" bindtap="toggleStock">{{showStock?'收起库存明细':'查看库存明细与有效期 ›'}}</view>
+<block wx:if="{{showStock}}">
+<view wx:for="{{batches}}" wx:key="id" class="row">
+  <view>
+    <text class="tag">库存 {{index+1}}</text>
+  </view>
+  <view class="muted">账面剩余 {{item.remaining}} · 有效期 {{item.expiry||'未填写'}}</view>
+  <view class="actions">
+
+    <button class="secondary" data-kind="loss" data-batch="{{item.id}}" bindtap="record">登记报损</button>
+  </view>
+</view>
+<view wx:if="{{containers.length}}" class="section row-title">开封与用完记录</view>
+<view wx:for="{{containers}}" wx:key="id" class="row">
+  <view>开封 {{item.openedAt}}</view>
+  <view class="muted">{{item.endedAt?(item.endType==='finish'?'正常用完':'报损结束'):'使用中'}} · {{item.endedAt||''}}</view>
+  <view class="actions" wx:if="{{!item.endedAt}}">
+    <button data-kind="finish" data-container="{{item.id}}" bindtap="record">正常用完</button>
+    <button class="secondary" data-kind="loss" data-container="{{item.id}}" bindtap="record">剩余丢弃</button>
+  </view>
+</view>
+</block>
+<view class="actions">
+  <button class="secondary" bindtap="edit">编辑物品与提醒</button>
+  <button class="danger" bindtap="remove">{{item.deleted?'恢复物品':'移入回收站'}}</button>
+</view>
+</view>

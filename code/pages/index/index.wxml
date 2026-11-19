@@ -1,0 +1,104 @@
+<view class="page home-page">
+  <view class="hero">
+    <view>
+      <view class="title">宝宝用品小柜</view>
+      <view class="subtitle">{{family.babyName ? family.babyName + '的用品和库存提醒' : '余量、有效期，一眼有数。'}}</view>
+    </view>
+    <view class="cabinet">
+      <view class="bottle-cap">
+      </view>
+      <view class="bottle-body">
+        <view class="bottle-line">
+        </view>
+        <view class="bottle-line short">
+        </view>
+      </view>
+      <view class="cabinet-dot">
+      </view>
+    </view>
+  </view>
+  <view wx:if="{{error}}" class="panel empty connection-state">
+    <view class="empty-symbol">↻</view>
+    <view class="empty-title">暂时没有连上用品小柜</view>
+    <view>库存还未加载，请稍后重新连接。</view>
+    <view class="notice error">{{error}}</view>
+    <button bindtap="load">重新连接</button>
+    <view class="footer-note">连接成功后，这里会显示家庭库存和待处理提醒。</view>
+  </view>
+  <view wx:if="{{loading}}" class="empty">正在查看家庭库存…</view>
+  <view wx:elif="{{!family && !error}}" class="panel welcome">
+    <view class="empty-symbol">＋</view>
+    <view class="empty-title">给宝宝安置一个用品小柜</view>
+    <view class="muted">创建家庭，和家人共享每一笔记录。</view>
+    <button bindtap="family">创建或加入家庭</button>
+  </view>
+  <block wx:if="{{family && !loading && !error}}">
+    <view class="quick-actions">
+      <view class="quick-primary" bindtap="recordUse">
+        <view class="quick-icon">＋</view>
+        <view class="row-title">记一笔使用</view>
+      </view>
+      <view class="quick-secondary" bindtap="intake">
+        <view class="quick-icon">↧</view>
+        <view class="row-title">新购入库</view>
+      </view>
+    </view>
+    <view class="section-head section">
+      <view class="row-title">用品余量</view>
+      <view class="home-links">
+        <view class="link" bindtap="trends">查看趋势</view>
+        <view class="link" bindtap="records">历史记录</view>
+      </view>
+    </view>
+    <view wx:if="{{!supplies.length}}" class="panel empty">
+      <view>还没有用品</view>
+      <view class="link" bindtap="items">去添加用品</view>
+    </view>
+    <view wx:else class="stock-list">
+      <view class="stock-line stock-header">
+        <text class="stock-name">用品</text>
+        <text class="stock-amount">剩余数量</text>
+        <text class="stock-estimate">预计可用</text>
+      </view>
+      <view wx:for="{{supplies}}" wx:key="id" class="stock-line stock-entry-row" data-id="{{item.id}}" bindtap="detail">
+        <view class="stock-name">
+          <view class="row-title">{{item.name}}</view>
+          <view wx:if="{{item.spec}}" class="muted">{{item.spec}}</view>
+          <view wx:if="{{item.inventoryWarning}}" class="muted">余量待核对</view>
+        </view>
+        <view class="stock-amount">{{item.available}} <text class="unit">{{item.unit}}</text></view>
+        <view class="stock-estimate {{item.estimate==='数据不足'?'muted':''}}">{{item.estimate}}</view>
+      </view>
+    </view>
+    <view wx:if="{{supplies.length}}" class="link" bindtap="historicalCount">补记历史库存数量</view>
+    <view class="section-head section">
+      <view class="row-title">今日留意</view>
+      <view class="count-pill">{{alerts.length}} 项待处理</view>
+    </view>
+    <view class="reminder-grid">
+      <view wx:for="{{summary}}" wx:key="type" class="reminder {{item.tone}}" bindtap="items">
+        <view class="reminder-count">{{item.count}}<text class="reminder-unit">项</text>
+      </view>
+      <view class="reminder-label">{{item.label}}</view>
+    </view>
+  </view>
+  <view class="section-head section">
+    <view class="row-title">待处理事项</view>
+  </view>
+  <view wx:if="{{!alerts.length}}" class="panel empty">
+    <view class="empty-symbol">✓</view>
+    <view class="empty-title">用品状态都不错</view>
+    <view>暂时没有待处理提醒，记得及时记录使用。</view>
+  </view>
+  <view wx:for="{{alerts}}" wx:key="index" class="alert-row" data-id="{{item.itemId}}" bindtap="detail">
+    <view class="alert-dot {{item.tone}}">
+    </view>
+    <view class="grow">
+      <view class="row-title">{{item.itemName}}</view>
+      <view class="muted">{{item.message}}</view>
+    </view>
+    <view class="chevron">›</view>
+  </view>
+  <view class="footer-note">账面余量会受漏记影响，请定期核对实物。</view>
+</block>
+</view>

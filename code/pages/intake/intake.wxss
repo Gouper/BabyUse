@@ -1,0 +1,26 @@
+.page > .notice {
+  background: transparent;
+  padding: 0;
+  color: #938a9e;
+}
+.row .value {
+  font-size: 30rpx;
+  text-align: right;
+  border-top: 2rpx dashed #e7e0f0;
+  padding-top: 22rpx;
+}
+.selection-hint { margin-top: 18rpx; line-height: 1.6; }
+.paste-toggle { margin: 28rpx 0; }
+.quantity-stepper { display: flex; align-items: center; gap: 20rpx; }
+.quantity-stepper input { flex: 1; min-width: 0; text-align: center; }
+.quantity-stepper button { flex-shrink: 0; margin: 0; }
+.detail-toggle { margin-top: 20rpx; }
+.optional-date { display: flex; align-items: center; gap: 24rpx; }
+.optional-date picker { flex: 1; }
+.intake-card .section-head { gap: 20rpx; }
+.intake-card .form-title { overflow-wrap: anywhere; }
+
+@media (prefers-color-scheme: dark) {
+  .page > .notice { color: #b8afc8; }
+  .row .value { border-top-color: #3b3449; }
+}

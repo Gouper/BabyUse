@@ -1,0 +1,78 @@
+.stock-entry {
+  background: white;
+  border-radius: 24rpx;
+  display: flex;
+  padding: 26rpx 20rpx;
+  gap: 18rpx;
+}
+.stock-entry > view {
+  display: flex;
+  gap: 14rpx;
+  align-items: center;
+  flex: 1;
+}
+.stock-entry .row-title {
+  font-size: 26rpx;
+}
+.stock-entry .muted {
+  font-size: 21rpx;
+}
+.entry-icon {
+  width: 56rpx;
+  height: 64rpx;
+  line-height: 64rpx;
+  text-align: center;
+  background: #eee8fa;
+  border-radius: 18rpx;
+  color: #7561cf;
+  font-size: 30rpx;
+  flex-shrink: 0;
+}
+.entry-icon.neutral {
+  background: #f9eedb;
+  color: #b4934c;
+}
+.supply-row {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+}
+checkbox {
+  transform: scale(0.8);
+  margin-left: -8rpx;
+}
+.stock-quantity {
+  font-size: 40rpx;
+  font-weight: 600;
+  color: #5f4baa;
+  flex-shrink: 0;
+}
+.supply-bottom {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-top: 22rpx;
+}
+.supply-bottom .muted {
+  flex: 1;
+  font-size: 23rpx;
+}
+.chevron {
+  color: #b2a8c0;
+  font-size: 34rpx;
+}
+
+
+@media (prefers-color-scheme: dark) {
+  .stock-entry { background: #262231; }
+  .entry-icon {
+    background: #332a48;
+    color: #d3c4ff;
+  }
+  .entry-icon.neutral {
+    background: #3c3022;
+    color: #eac47e;
+  }
+  .stock-quantity { color: #bba8ff; }
+  .chevron { color: #a89db9; }
+}

@@ -1,0 +1,131 @@
+<template name="choice-field">
+  <view wx:if="{{recommended.length && !disabled}}" class="choice-recommendations">
+    <button wx:for="{{recommended}}" wx:key="*this" class="{{value===item?'':'secondary'}}" size="mini" data-key="{{key}}" data-value="{{item}}" bindtap="chooseQuickOption">{{item}}</button>
+  </view>
+  <picker range="{{choices}}" range-key="label" data-key="{{key}}" bindchange="chooseField" disabled="{{disabled}}">
+    <view class="choice-control">
+      <text>{{(value || value===0) ? value : placeholder}}</text>
+      <text wx:if="{{!disabled}}" class="muted">全部选项 ›</text>
+    </view>
+  </picker>
+  <input wx:if="{{manual && !disabled}}" type="{{inputType || 'text'}}" value="{{value}}" placeholder="请填写" data-key="{{key}}" bindinput="input"/>
+</template>
+<view wx:if="{{createdItem}}" class="page">
+  <view class="title">已添加 {{createdItem.name}}</view>
+  <view class="subtitle">接下来可以填实际库存数量。</view>
+  <view class="panel form-panel">
+    <button data-source="purchase" bindtap="continueToIntake">新购入库</button>
+    <button class="secondary" data-source="initial" bindtap="continueToIntake">录现有库存</button>
+    <button class="quiet" bindtap="returnFromEditor">返回</button>
+  </view>
+</view>
+<view wx:else class="page">
+  <view wx:if="{{historicalCount}}" class="title">补记历史库存</view>
+  <view wx:else class="title">{{kind==='item'?(itemId?'编辑物品':'添加物品'):kind==='use'?'记录使用':kind==='count'?'盘点校准':kind==='loss'?'登记报损':kind==='open'?'记录开封':kind==='finish'?'正常用完':'更正记录'}}</view>
+  <block wx:if="{{kind==='item'}}">
+    <view class="subtitle">这里只添加用品资料，不增加库存。保存后到“新购入库”或“整理现有物品”填写实际数量。</view>
+    <view wx:if="{{!itemId}}" class="panel form-panel">
+      <view class="label">用品类型</view>
+      <picker range="{{templateNames}}" value="{{templateIndex}}" bindchange="chooseTemplate" disabled="{{busy}}">
+        <view class="choice-control"><text>{{templateNames[templateIndex]}}</text><text class="muted">选择 ›</text></view>
+      </picker>
+    </view>
+    <view wx:if="{{itemId}}" class="notice">已有物品保留基本单位、包装换算和管理规则；可调整名称、分类、规格及提醒阈值。需变更管理方式时请新增物品。</view>
+    <view class="panel form-panel">
+      <view class="form-title">基本信息</view>
+      <view class="label">名称（必填）</view>
+      <template is="choice-field" data="{{key:'name', value:form.name, choices:choiceOptions.name, manual:manualFields.name, placeholder:'选择名称'}}"/>
+      <view wx:if="{{fieldErrors.name}}" class="notice error">{{fieldErrors.name}}</view>
+      <view class="label">分类</view>
+      <template is="choice-field" data="{{key:'category', value:form.category, choices:choiceOptions.category, manual:manualFields.category, placeholder:'选择分类'}}"/>
+      <view class="label">规格</view>
+      <template is="choice-field" data="{{key:'spec', value:form.spec, choices:choiceOptions.spec, manual:manualFields.spec, recommended:quickOptions.spec, placeholder:'选择规格'}}"/>
+    </view>
+    <view class="panel form-panel">
+      <view class="form-title">库存怎么记</view>
+      <view class="label">计数单位（必填）</view>
+      <template is="choice-field" data="{{key:'unit', value:form.unit, choices:choiceOptions.unit, manual:manualFields.unit, recommended:quickOptions.unit, disabled:!!itemId, placeholder:'选择计数单位'}}"/>
+      <view wx:if="{{fieldErrors.unit}}" class="notice error">{{fieldErrors.unit}}</view>
+      <view class="label">每包包含多少 {{form.unit||'个计数单位'}}（必填）</view>
+      <view class="muted">按实际包装选择。单罐、单瓶选 1，一包 52 片选 52。</view>
+      <template is="choice-field" data="{{key:'packSize', value:form.packSize, choices:choiceOptions.packSize, manual:manualFields.packSize, disabled:!!itemId, inputType:'digit', placeholder:'选择每包数量'}}"/>
+      <view wx:if="{{packReview}}" class="notice"><view>用品类型或计数单位已变更，请核对每包数量。</view><button class="secondary" size="mini" data-key="packSize" bindtap="confirmValue">确认仍为 {{form.packSize}}</button></view>
+      <view wx:if="{{fieldErrors.packSize}}" class="notice error">{{fieldErrors.packSize}}</view>
+      <view class="label">使用方式</view>
+      <picker disabled="{{!!itemId}}" range="{{modeNames}}" value="{{modeIndex}}" bindchange="mode">{{modeNames[modeIndex]}}</picker>
+      <view class="label">有效期规则</view>
+      <picker disabled="{{!!itemId}}" range="{{expiryNames}}" value="{{expiryIndex}}" bindchange="expiry">{{expiryNames[expiryIndex]}}</picker>
+      <block wx:if="{{expiryIndex===2}}">
+        <view class="label">开封后可使用天数（必填）</view>
+        <input placeholder="按包装说明填写天数，不确定请先核对包装" type="number" value="{{form.openDays}}" disabled="{{!!itemId}}" data-key="openDays" bindinput="input"/>
+        <view wx:if="{{openReview}}" class="notice"><view>用品类型已变更，请核对包装上的开封天数。</view><button class="secondary" size="mini" data-key="openDays" bindtap="confirmValue">确认仍为 {{form.openDays}} 天</button></view>
+      <view wx:if="{{fieldErrors.openDays}}" class="notice error">{{fieldErrors.openDays}}</view>
+      </block>
+    </view>
+    <view class="panel form-panel">
+      <button class="quiet reminder-toggle" bindtap="toggleReminders">{{showReminders?'收起提醒设置':'展开提醒设置'}}</button>
+      <block wx:if="{{showReminders}}">
+      <view class="label">预计可用不足几天提醒</view>
+      <template is="choice-field" data="{{key:'runoutDays', value:form.runoutDays, choices:choiceOptions.runoutDays, manual:manualFields.runoutDays, inputType:'number', placeholder:'选择天数'}}"/>
+      <view wx:if="{{fieldErrors.runoutDays}}" class="notice error">{{fieldErrors.runoutDays}}</view>
+      <block wx:if="{{expiryIndex!==0}}">
+      <view class="label">包装到期前几天提醒</view>
+      <template is="choice-field" data="{{key:'expiryWarningDays', value:form.expiryWarningDays, choices:choiceOptions.expiryWarningDays, manual:manualFields.expiryWarningDays, inputType:'number', placeholder:'选择天数'}}"/>
+      <view wx:if="{{fieldErrors.expiryWarningDays}}" class="notice error">{{fieldErrors.expiryWarningDays}}</view>
+      </block>
+      <block wx:if="{{expiryIndex===2}}">
+      <view class="label">开封到期前几天提醒</view>
+      <template is="choice-field" data="{{key:'openWarningDays', value:form.openWarningDays, choices:choiceOptions.openWarningDays, manual:manualFields.openWarningDays, inputType:'number', placeholder:'选择天数'}}"/>
+      <view wx:if="{{fieldErrors.openWarningDays}}" class="notice error">{{fieldErrors.openWarningDays}}</view>
+      </block>
+      <view class="label">低库存数量阈值</view>
+      <template is="choice-field" data="{{key:'lowStock', value:form.lowStock, choices:choiceOptions.lowStock, manual:manualFields.lowStock, inputType:'digit', placeholder:'选择数量'}}"/>
+      <view wx:if="{{fieldErrors.lowStock}}" class="notice error">{{fieldErrors.lowStock}}</view>
+      </block>
+    </view>
+  </block>
+  <block wx:else>
+    <view class="subtitle">{{historicalCount?'填以前某天实际清点的余量。该日期还没入库过的用品，先用“整理现有物品”补录。':kind==='use'?'选用品、填用量，直接保存。':'每一笔都会保留，方便家人一起核对。'}}</view>
+    <view wx:if="{{selectRecordItem}}" class="panel form-panel">
+      <view wx:if="{{loadingItems}}" class="muted">正在加载用品…</view>
+      <view wx:elif="{{loadError}}"><view class="notice error">{{loadError}}</view><button class="secondary" bindtap="loadUsageItems">重新加载</button></view>
+      <view wx:elif="{{!items.length}}" class="notice">还没有用品，请先在用品页添加用品并录入库存，再回来记使用。</view>
+      <block wx:else>
+        <view class="label">{{historicalCount?'清点了什么':'用了什么'}}</view>
+        <supply-picker items="{{items}}" selected-id="{{selectedItem.id}}" disabled="{{busy}}" placeholder="选择用品" bind:select="selectItem" />
+        <view wx:if="{{selectedItem && !historicalCount}}" class="muted">可用 {{selectedItem.available}} {{selectedItem.unit}}</view>
+        <block wx:if="{{kind==='use' && selectedItem.mode==='container'}}">
+          <view class="label">这次记什么</view>
+          <picker range="{{usageActions}}" value="{{usageAction}}" bindchange="selectUsageAction">{{usageActions[usageAction]}}</picker>
+          <view class="notice">开封时记开始用，整罐／瓶用完时再记用完，每次记录 1 {{selectedItem.unit}}。</view>
+          <block wx:if="{{usageAction===1}}">
+            <picker wx:if="{{activeContainers.length}}" range="{{activeContainers}}" range-key="label" value="{{containerIndex}}" bindchange="selectContainer">{{activeContainers[containerIndex].label}}</picker>
+            <view wx:else class="notice">还没有正在使用的罐／瓶，请先记录开始使用。</view>
+          </block>
+        </block>
+      </block>
+    </view>
+    <view class="panel form-panel">
+      <view class="label">{{historicalCount?'实际清点日期':'发生日期（可选过去日期）'}}</view>
+      <picker mode="date" value="{{form.date||latestDate}}" end="{{latestDate}}" data-key="date" bindchange="input">{{form.date||'请选择日期'}}</picker>
+      <block wx:if="{{kind==='use' && selectedItem.mode==='quantity'}}">
+        <view class="link" bindtap="toggleMoreUsage">{{moreUsage?'收起多日补记':'补记多天用量（选填）'}}</view>
+        <block wx:if="{{moreUsage}}">
+        <view class="label">区间总用量的结束日期（选填）</view>
+        <picker mode="date" data-key="endDate" bindchange="input">{{form.endDate||'单日使用留空'}}</picker>
+        </block>
+      </block>
+      <block wx:if="{{(kind==='use' && selectedItem.mode==='quantity')||kind==='count'||kind==='loss'||(kind==='edit' && recordType!=='finish')}}">
+        <view class="label">{{historicalCount?(selectedItem.mode==='container'?'当时未开封数量':'当时剩余数量')+(selectedItem?'（'+selectedItem.unit+'）':''):kind==='count'?'清点后的实际数量':kind==='use'?'用了多少（'+selectedItem.unit+'）':'数量'}}</view>
+        <input type="digit" value="{{form.quantity}}" placeholder="填写数量" data-key="quantity" bindinput="input"/>
+      </block>
+      <block wx:if="{{(kind==='count' && !historicalCount)||kind==='loss'}}">
+        <view class="label">原因（必填）</view>
+        <template is="choice-field" data="{{key:'reason', value:form.reason, choices:choiceOptions.reason, manual:manualFields.reason, placeholder:'选择调整原因'}}"/>
+      </block>
+      <view wx:if="{{historicalCount}}" class="notice">保存后会按这次清点和之后的记录重新计算余量。如果之后已经清点过，以较新的清点为准。</view>
+      <view wx:elif="{{kind==='count'}}" class="notice">校准差额单独记录。补记盘点前的用量不会重复扣减当前余量。</view>
+    </view>
+  </block>
+  <button loading="{{busy}}" disabled="{{busy || (selectRecordItem && (loadingItems || !!loadError || !selectedItem))}}" bindtap="save">确认保存</button>
+</view>

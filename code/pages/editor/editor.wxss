@@ -1,0 +1,30 @@
+.form-panel {
+  margin-top: 28rpx;
+}
+.form-panel input:last-child {
+  margin-bottom: 0;
+}
+.form-panel .actions {
+  margin-top: 0;
+}
+.choice-control {
+  display: flex;
+  justify-content: space-between;
+  gap: 18rpx;
+  align-items: center;
+  overflow-wrap: anywhere;
+}
+.choice-control .muted {
+  flex: none;
+}
+.choice-recommendations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-bottom: 12rpx;
+}
+.reminder-toggle {
+  width: 100%;
+  text-align: left;
+  padding: 0;
+}

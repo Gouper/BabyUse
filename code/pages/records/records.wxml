@@ -1,0 +1,20 @@
+<view class="page">
+  <view class="title">家庭记账本</view>
+  <view class="subtitle">正常使用、采购、报损和校准分别保留。</view>
+  <view wx:if="{{error}}" class="notice">{{error}}</view>
+  <view class="actions">
+    <button bindtap="recordUse">记一笔使用</button>
+  </view>
+  <view wx:if="{{!records.length}}" class="empty">还没有操作记录</view>
+  <view wx:for="{{records}}" wx:key="id" class="row timeline-row">
+    <view class="row-title">{{item.itemName}}</view>
+    <view>{{typeNames[item.type]||'家庭操作'}} · {{item.quantity===undefined?'':item.quantity}} {{item.voided?'（已撤销）':''}}</view>
+    <view class="muted">发生 {{item.date}} {{item.endDate?'至 '+item.endDate+'（区间汇总）':''}}</view>
+    <view class="muted">{{item.actorName}} · 录入 {{item.createdAt}}</view>
+    <view wx:if="{{item.reason}}">{{item.reason}}</view>
+    <view class="actions" wx:if="{{!item.voided && (item.type==='use'||item.type==='finish')}}">
+      <button class="secondary" data-id="{{item.id}}" data-item="{{item.itemId}}" data-type="{{item.type}}" bindtap="edit">更正记录</button>
+      <button class="secondary" data-id="{{item.id}}" bindtap="undo">撤销</button>
+    </view>
+  </view>
+</view>

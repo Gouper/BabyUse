@@ -1,0 +1,58 @@
+/* Shared dark palette for the page and basic controls. */
+@media (prefers-color-scheme: dark) {
+  page {
+    background: #1b1822;
+    color: #f0eaf7;
+  }
+
+  .subtitle, .muted, .unit, .empty, .field-help, .footer-note,
+  .count-pill, .record-meta, .input-placeholder, .textarea-placeholder {
+    color: #b8afc8;
+  }
+
+  .brand, .link, .value, button.quiet {
+    color: #bba8ff;
+  }
+
+  .row, .panel, .search {
+    background: #262231;
+  }
+
+  .empty-title, .label {
+    color: #ddd4ea;
+  }
+
+  .notice, button.secondary, .tag, .empty-symbol, .avatar {
+    background: #332a48;
+    color: #d3c4ff;
+  }
+
+  .notice.error, button.danger {
+    background: #432a31;
+    color: #ffb0a4;
+  }
+
+  button {
+    background: #bba8ff;
+    color: #251b3b;
+  }
+
+  button[disabled] {
+    background: #312b3c;
+    color: #9b91ac;
+  }
+
+  input, textarea, picker {
+    background: #211d2b;
+    border-color: #494158;
+    color: #f0eaf7;
+  }
+
+  .bar {
+    background: #a58ce8;
+  }
+
+  .divider {
+    background: #3b3449;
+  }
+}

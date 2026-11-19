@@ -1,0 +1,16 @@
+.family-heading {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  margin: 12rpx 0 32rpx;
+}
+.family-heading .title {
+  font-size: 38rpx;
+  margin: 0 0 6rpx;
+}
+.family-heading .avatar {
+  width: 96rpx;
+  height: 96rpx;
+  line-height: 96rpx;
+  border-radius: 32rpx;
+}
